@@ -5,7 +5,10 @@ import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { serverUrl } from "../App";
-
+import { GoogleAuthProvider } from "firebase/auth";
+import { signInWithPopup } from "firebase/auth";
+import { auth } from "../../firebase.js";
+import { ClipLoader } from "react-spinners";
 function SignUp() {
   const primaryColor = "#ff4d2d";
   const hoverColor = "#e64323";
@@ -18,18 +21,55 @@ function SignUp() {
   const [email, setEmail] = useState("");
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
-
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSignUp = async () => {
+    setLoading(true);
     try {
-      const result = await axios.post(`${serverUrl}/api/auth/signup`,{
-        fullName, email, mobile, password, role
-      },{withCredentials: true})
-      console.log(result)
+      const result = await axios.post(
+        `${serverUrl}/api/auth/signup`,
+        {
+          fullName,
+          email,
+          mobile,
+          password,
+          role,
+        },
+        { withCredentials: true },
+      );
+      console.log(result);
+      setError("");
+      setLoading(false);
     } catch (error) {
-      console.log(error)
+       setError(error?.response?.data?.message);
+        setLoading(false);
     }
-  }
+  };
+
+  const handleGoogleAuth = async () => {
+    if (!mobile) {
+      return setError("Please enter your mobile number to continue with Google Sign Up");
+    }
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    try {
+      const {data} = await axios.post(
+        `${serverUrl}/api/auth/google-auth`,
+        {
+          fullName: result.user.displayName,
+          email: result.user.email,
+          mobile,
+          role,
+        },
+        { withCredentials: true },
+      );
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div
       className="min-h-screen w-full flex items-center justify-center p-4 
@@ -68,7 +108,8 @@ function SignUp() {
             style={{
               border: `1px solid ${borderColor}`,
             }}
-            onChange={(e)=>setFullName(e.target.value)} value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            value={fullName} required
           />
         </div>
 
@@ -88,7 +129,8 @@ function SignUp() {
             style={{
               border: `1px solid ${borderColor}`,
             }}
-            onChange={(e)=>setEmail(e.target.value)} value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            value={email} required
           />
         </div>
 
@@ -108,7 +150,8 @@ function SignUp() {
             style={{
               border: `1px solid ${borderColor}`,
             }}
-            onChange={(e)=>setMobile(e.target.value)} value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+            value={mobile} required
           />
         </div>
 
@@ -129,7 +172,8 @@ function SignUp() {
               style={{
                 border: `1px solid ${borderColor}`,
               }}
-              onChange={(e)=>setPassword(e.target.value)} value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              value={password} required
             />
             <button
               className="absolute cursor-pointer right-3 top-3.5 text-gray-500"
@@ -173,14 +217,21 @@ function SignUp() {
           className={`w-full font-semibold py-2 mt-4 rounded-lg transition duration-200 bg-[#ff4d2d] text-white hover:bg-[#e64323] cursor-pointer`}
           onClick={handleSignUp}
         >
-          Sign Up
+          {loading?<ClipLoader size={20} color="white"/>:"Sign Up"}
         </button>
+        {error && <p className="text-red-500 text-center my-2.5">*{error}</p>}
 
-        <button className="w-full mt-4 flex items-center justify-center gap-2 border rounded-lg py-2 px-4 transition duration-200 border-gray-400 hover:bg-gray-100 cursor-pointer">
+        <button
+          className="w-full mt-4 flex items-center justify-center gap-2 border rounded-lg py-2 px-4 transition duration-200 border-gray-400 hover:bg-gray-100 cursor-pointer"
+          onClick={handleGoogleAuth} disabled={loading}
+        >
           <FcGoogle size={20} />
           <span>Sign Up with google</span>
         </button>
-        <p className="text-center mt-6 cursor-pointer" onClick={()=>navigate("/signin")}>
+        <p
+          className="text-center mt-6 cursor-pointer"
+          onClick={() => navigate("/signin")}
+        >
           Already have an account ?{" "}
           <span className="text-[#ff4d2d]">Sign In</span>
         </p>
