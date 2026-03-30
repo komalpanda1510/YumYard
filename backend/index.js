@@ -19,7 +19,7 @@ app.use(cors({
 }));
 
 app.use("/api/auth",authRouter);
-app.use("/api/auth",userRouter);
+app.use("/api/user",userRouter);
 
 
 const PORT = process.env.PORT || 5000;

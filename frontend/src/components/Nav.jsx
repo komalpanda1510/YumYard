@@ -2,13 +2,29 @@ import React, { useState } from "react";
 import { FaLocationDot } from "react-icons/fa6";
 import { IoSearchSharp } from "react-icons/io5";
 import { FiShoppingCart } from "react-icons/fi";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RxCross1 } from "react-icons/rx";
+import axios from "axios";
+import { serverUrl } from "../App";
+import { setUserData } from "../redux/userSlice";
 
 function Nav() {
-  const { userData } = useSelector((state) => state.user);
+  const { userData, city } = useSelector((state) => state.user);
   const [showInfo, setShowInfo] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const dispatch = useDispatch();
+
+  const handleLogout = async () => {
+    try {
+      const result = await axios.get(`${serverUrl}/api/auth/signout`, {
+        withCredentials: true,
+      });
+      dispatch(setUserData(null));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div
       className="w-full h-[80px] flex items-center justify-between md:justify-center
@@ -35,8 +51,6 @@ function Nav() {
         </div>
       )}
 
-
-
       <h1 className="text-3xl font-bold mb-2 text-[#ff4d2d]">YumYard</h1>
       <div
         className="md:w-[60%] lg:w-[40%] h-[70px] bg-white shadow-xl rounded-lg 
@@ -44,7 +58,7 @@ function Nav() {
       >
         <div className="flex items-center w-[30%] overflow-hidden gap-[10px] px-[10px] border-r-[2px] border-gray-400">
           <FaLocationDot size={25} className=" text-[#ff4d2d]" />
-          <div className="w-[80%] truncate text-gray-600">Bhubaneswar</div>
+          <div className="w-[80%] truncate text-gray-600">{city}</div>
         </div>
         <div className="w-[80%] flex items-center gap-[10px]">
           <IoSearchSharp size={25} className=" text-[#ff4d2d]" />
@@ -58,7 +72,8 @@ function Nav() {
       </div>
       <div className="flex items-center gap-4">
         {showSearch ? (
-          <RxCross1 size={25}
+          <RxCross1
+            size={25}
             className=" text-[#ff4d2d] md:hidden"
             onClick={() => setShowSearch(false)}
           />
@@ -98,7 +113,7 @@ function Nav() {
             <div className="md:hidden text-[#ff4d2d] fpnt-semibold cursor-pointer">
               My Orders
             </div>
-            <div className="text-[#ff4d2d] font-semibold cursor-pointer">
+            <div className="text-[#ff4d2d] font-semibold cursor-pointer" onClick={handleLogout}>
               Log out
             </div>
           </div>
