@@ -35,6 +35,11 @@ const itemSchema = new mongoose.Schema(
       min: 0,
       required: true,
     },
+    foodType: {
+      type: String,
+      enum: ["Veg", "Non Veg"],
+      required: true,
+    },
   },
   { timestamps: true },
 );
