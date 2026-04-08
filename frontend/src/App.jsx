@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import Home from "./pages/Home";
 import useGetCity from "./hooks/useGetCity";
 import useGetMyShop from "./hooks/useGetMyShop";
+import CreateEditShop from "./pages/CreateEditShop";
 export const serverUrl = "http://localhost:8000";
 function App() {
   useGetCurrentUser(); // Fetch current user on app load
@@ -20,6 +21,8 @@ function App() {
       <Route path="/signin" element={!userData?<SignIn />:<Navigate to={"/"}/>} />
       <Route path="/forgot-password" element={!userData?<ForgotPassword />:<Navigate to={"/"}/>} />
       <Route path="/" element={userData?<Home/>:<Navigate to={"/signin"}/>} />
+      <Route path="/create-edit-shop" element={userData?<CreateEditShop/>:<Navigate to={"/signin"}/>} />
+
 
     </Routes>
   );
