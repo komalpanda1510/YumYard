@@ -28,7 +28,7 @@ export const createEditShop = async (req, res) => {
       },      {new:true});
     }
 
-    await shop.populate("owner");
+    await shop.populate("owner items");
     res.status(201).json(shop);
   } catch (error) {
     res
@@ -41,7 +41,10 @@ export const createEditShop = async (req, res) => {
 
 export const getMyShop = async (req, res) => {
   try {
-    const shop = await Shop.findOne({ owner: req.userId }).populate("owner items");
+    const shop = await Shop.findOne({ owner: req.userId }).populate("owner").populate({
+      path: "items",
+      options:{sort:{updatedAt:-1}}
+    });
     if(!shop){
       return null;
     }
