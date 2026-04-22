@@ -53,3 +53,19 @@ export const getMyShop = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch shop", error: error.message });
   }
 }
+
+export const getShopByCity = async (req, res) => {
+  try {
+    const { city } = req.params;
+    const shops = await Shop.find({
+      city: { $regex: new RegExp(`^${city}$`, "i") },
+    }).populate('items');
+    if(!shops){
+      return res.status(404).json({ message: "No shops found in this city" });
+    }
+    return res.status(200).json(shops);
+
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch shops", error: error.message });
+  }
+}
