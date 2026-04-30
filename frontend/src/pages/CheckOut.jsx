@@ -1,10 +1,69 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { FaLocationDot } from "react-icons/fa6";
 import { IoMdSearch } from "react-icons/io";
 import { BiCurrentLocation } from "react-icons/bi";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
+import { useDispatch, useSelector } from "react-redux";
+import "leaflet/dist/leaflet.css";
+import { setAddress, setLocation } from "../redux/mapSlice";
+import axios from "axios";
+
+function RecenterMap({ location }) {
+  if (location.lat && location.lon) {
+    const map = useMap();
+    map.setView([location.lat, location.lon], 16, { animate: true });
+  }
+  return null;
+}
 
 function CheckOut() {
+  const { location, address } = useSelector((state) => state.map);
+  const [addressInput,setAddressInput]=useState("")
+  const dispatch = useDispatch();
+  const apiKey = import.meta.env.VITE_GEOAPIKEY;
+
+  const onDragEnd = (e) => {
+    const { lat, lng } = e.target._latlng;
+    dispatch(setLocation({ lat, lon: lng }));
+    getAddressByLatLng(lat, lng);
+  };
+
+   const getCurrentLocation = () => {
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      dispatch(setLocation({ lat: latitude, lon: longitude }));
+      getAddressByLatLng(latitude,longitude)
+    });
+  };
+
+  const getAddressByLatLng = async (lat, lng) => {
+    try {
+      const result = await axios.get(
+        `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lng}&format=json&apiKey=${apiKey}`,
+      );
+      dispatch(setAddress(result?.data?.results[0].address_line2));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
+  const getLatLngByAddress=async()=>{
+try {
+  const result = await axios.get(`https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(addressInput)}&apiKey=${apiKey}`)
+  const {lat,lon} = result.data.features[0].properties
+  dispatch(setLocation({lat,lon}))
+} catch (error) {
+  console.log(error)
+}
+  }
+  useEffect(()=>{
+setAddressInput(address)
+  },[address])
+ 
+
   return (
     <div className="min-h-screen bg-[#fff96f6] flex items-center justify-center p-6">
       <div
@@ -21,12 +80,47 @@ function CheckOut() {
             Delivery Location
           </h2>
           <div className="flex gap-2 mb-3">
-            <input type="text" className="flex-1 border border-gray-300 rounded-lg
-             p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff4d2d]" placeholder="Enter your Delivery Address..."/>
-            <button className="bg-[#ff4d2d] hover:bg-[#e64526] text-white
-            px-3 py-2 rounded-lg flex items-center justify-center "><IoMdSearch size={17}/></button>
-            <button className="bg-blue-500 hover:bg-blue-600 text-white 
-            px-3 py-2 rounded-lg flex items-center justify-center"><BiCurrentLocation size={17}/></button>
+            <input
+              type="text"
+              className="flex-1 border border-gray-300 rounded-lg
+             p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff4d2d]"
+              placeholder="Enter your Delivery Address..."
+              value={addressInput} onChange={(e)=>
+                setAddressInput(e.target.value)
+              }
+            />
+            <button
+              className="bg-[#ff4d2d] hover:bg-[#e64526] text-white
+            px-3 py-2 rounded-lg flex items-center justify-center " onClick={getLatLngByAddress}
+            >
+              <IoMdSearch size={17} />
+            </button>
+            <button
+              className="bg-blue-500 hover:bg-blue-600 text-white 
+            px-3 py-2 rounded-lg flex items-center justify-center" onClick={getCurrentLocation}
+            >
+              <BiCurrentLocation size={17} />
+            </button>
+          </div>
+          <div className="rounded-xl border overflow-hidden">
+            <div className="h-64 w-full flex items-center justify-center">
+              <MapContainer
+                className={"w-full h-full"}
+                center={[location?.lat, location?.lon]}
+                zoom={16}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <RecenterMap location={location} />
+                <Marker
+                  position={[location?.lat, location?.lon]}
+                  draggable
+                  eventHandlers={{ dragend: onDragEnd }}
+                />
+              </MapContainer>
+            </div>
           </div>
         </section>
       </div>
