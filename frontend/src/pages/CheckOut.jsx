@@ -11,6 +11,7 @@ import axios from "axios";
 import { MdDeliveryDining } from "react-icons/md";
 import { FaMobileAlt } from "react-icons/fa";
 import { FaCreditCard } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 function RecenterMap({ location }) {
   if (location.lat && location.lon) {
@@ -22,10 +23,15 @@ function RecenterMap({ location }) {
 
 function CheckOut() {
   const { location, address } = useSelector((state) => state.map);
+  const { cartItems, totalAmount } = useSelector((state) => state.user);
+
   const [addressInput, setAddressInput] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cod");
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const apiKey = import.meta.env.VITE_GEOAPIKEY;
+  const deliveryFee = totalAmount > 500 ? 0 : 40;
+  const AmountWithDeliveryFee = totalAmount + deliveryFee;
 
   const onDragEnd = (e) => {
     const { lat, lng } = e.target._latlng;
@@ -167,12 +173,50 @@ function CheckOut() {
                 <FaCreditCard className="text-blue-700 text-lg" />
               </span>
               <div>
-                <p className="font-medium text-gray-800">UPI / Credit / Debit Card</p>
+                <p className="font-medium text-gray-800">
+                  UPI / Credit / Debit Card
+                </p>
                 <p className="text-xs text-gray-500">Pay Securely Online</p>
               </div>
             </div>
           </div>
         </section>
+
+        <section>
+          <h2 className="text-lg font-semibold mb-3 text-gray-800">
+            Order Summary
+          </h2>
+          <div className="rounded-xl border bg-gray-50 p-4 space-y-2">
+            {cartItems.map((item, index) => (
+              <div
+                key={index}
+                className="flex justify-between text-sm text-gray-700"
+              >
+                <span>
+                  {item.name} x {item.quantity}
+                </span>
+                <span> ₹{item.price * item.quantity}</span>
+              </div>
+            ))}
+            <hr className="border-gray-200 my-2" />
+            <div className="flex justify-between font-medium text-gray-800">
+              <span>Subtotal</span>
+              <span>{totalAmount}</span>
+            </div>
+            <div className="flex justify-between text-gray-700">
+              <span>Delivery Fee</span>
+              <span>{deliveryFee == 0 ? "Free" : deliveryFee}</span>
+            </div>
+            <div className="flex justify-between text-lg font-bold text-[#ff4d2d] pt-2">
+              <span>Total</span>
+              <span>{AmountWithDeliveryFee}</span>
+            </div>
+          </div>
+        </section>
+        <button className="w-full bg-[#ff4d2d] hover:bg-[#e64526] text-white py-3 rounded-xl 
+        font-semibold">
+          {paymentMethod == "cod" ? "Place Order" : "Pay & Place Order"}
+        </button>
       </div>
     </div>
   );
