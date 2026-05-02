@@ -29,7 +29,7 @@ export const placeOrder = async(req , res)=>{
             const items = groupItemsByShop[shopId]
             const subtotal = items.reduce((sum,i)=>sum+Number(i.price)*Number(i.quantity),0)
             return {
-                shop:shop._id,
+                shop:shop.id,
                 owner:shop.owner._id,
                 subtotal,
                 shopOrderItems:items.map((i)=>({
@@ -52,5 +52,34 @@ export const placeOrder = async(req , res)=>{
 
     } catch (error) {
         return res.status(500).json({message:`place order error ${error}`})
+    }
+}
+
+
+export const getUserOrders=async(req,res)=>{
+    try {
+        const orders = await Order.find({user:req.userId})
+        .sort({createdAt:-1})
+        .populate("shopOrders.shop","name")
+        .populate("shopOrders.owner","name email mobile")
+        .populate("shopOrders.shopOrderItems.item","name image price")
+         return res.status(200).json(orders)
+    } catch (error) {
+        return res.status(500).json({message:`get User order error ${error}`})
+
+    }
+}
+
+export const getOwnerOrder=async(req,res)=>{
+    try {
+        const orders = await Order.find({"shopOrders.owner":req.userId})
+        .sort({createdAt:-1})
+        .populate("shopOrders.shop","name")
+        .populate("user")
+        .populate("shopOrders.shopOrderItems.item","name image price")
+         return res.status(200).json(orders)
+    } catch (error) {
+        return res.status(500).json({message:`get User order error ${error}`})
+
     }
 }
