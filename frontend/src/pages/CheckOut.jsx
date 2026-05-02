@@ -12,6 +12,8 @@ import { MdDeliveryDining } from "react-icons/md";
 import { FaMobileAlt } from "react-icons/fa";
 import { FaCreditCard } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { serverUrl } from "../App";
+
 
 function RecenterMap({ location }) {
   if (location.lat && location.lon) {
@@ -70,6 +72,26 @@ function CheckOut() {
       console.log(error);
     }
   };
+
+  const handlePlaceOrder=async()=>{
+    try {
+      const result = await axios.post(`${serverUrl}/api/order/place-order`,{
+        paymentMethod,
+        deliveryAddress:{
+          text:addressInput,
+          latitude:location.lat,
+          longitude:location.lon
+        },
+        totalAmount,
+        cartItems
+      },{withCredentials:true})
+      console.log(result.data)
+      navigate("/order-placed")
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   useEffect(() => {
     setAddressInput(address);
   }, [address]);
@@ -214,7 +236,7 @@ function CheckOut() {
           </div>
         </section>
         <button className="w-full bg-[#ff4d2d] hover:bg-[#e64526] text-white py-3 rounded-xl 
-        font-semibold">
+        font-semibold" onClick={handlePlaceOrder}>
           {paymentMethod == "cod" ? "Place Order" : "Pay & Place Order"}
         </button>
       </div>
