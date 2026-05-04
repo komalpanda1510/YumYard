@@ -17,6 +17,7 @@ import CartPage from "./pages/CartPage";
 import CheckOut from "./pages/CheckOut";
 import OrderPlaced from "./pages/OrderPlaced";
 import MyOrders from "./pages/MyOrders";
+import useGetMyOrders from "./hooks/useGetMyOrders";
 export const serverUrl = "http://localhost:8000";
 function App() {
   useGetCurrentUser(); // Fetch current user on app load
@@ -24,6 +25,7 @@ function App() {
   useGetMyShop(); // Fetch user's shop data on app load
   useGetShopByCity(); // Fetch shops in user's city on app load
   useGetItemsByCity(); // Fetch items in user's city on app load
+  useGetMyOrders(); // Fetch user's orders on app load
   const {userData}=useSelector(state=>state.user);
   return (
     <Routes>
