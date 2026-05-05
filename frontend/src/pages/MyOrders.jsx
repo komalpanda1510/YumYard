@@ -18,9 +18,9 @@ function MyOrders() {
         </div>
         <div className="space-y-6">
           {myOrders?.map((order, index) =>
-            userData?.role == "user" ? (
+            userData.role == "user" ? (
               <UserOrderCard data={order} key={index}/>
-            ) : userData?.role == "owner" ? (
+            ) : userData.role == "owner" ? (
               <OwnerOrderCard data={order} key={index}/>
             ) : null,
           )}
