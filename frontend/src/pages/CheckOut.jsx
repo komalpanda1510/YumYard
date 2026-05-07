@@ -13,6 +13,7 @@ import { FaMobileAlt } from "react-icons/fa";
 import { FaCreditCard } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { serverUrl } from "../App";
+import { addMyOrder } from "../redux/userSlice";
 
 
 function RecenterMap({ location }) {
@@ -85,7 +86,7 @@ function CheckOut() {
         totalAmount,
         cartItems
       },{withCredentials:true})
-      console.log(result.data)
+      dispatch(addMyOrder(result.data))
       navigate("/order-placed")
     } catch (error) {
       console.log(error)
