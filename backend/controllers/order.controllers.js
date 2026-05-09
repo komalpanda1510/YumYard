@@ -108,11 +108,12 @@ export const updateOrderStatus = async (req, res) => {
     }
     shopOrder.status=status
     await shopOrder.save()
-    await shopOrder.populate("shopOrderItems.item","name image price")
-    return res.status(200).json(shopOrder)
+    await order.save()
+    return res.status(200).json(shopOrder.status)
   } catch (error) {
-    return res.status(500).json({ message: `update order status error ${error}` });
+    return res.status(500).json({ message: `update order status error ${error}`});
     
   }
 }
+
 
